@@ -1,5 +1,5 @@
 from functools import wraps
-from os import abort
+import os
 
 from flask import Flask, render_template, redirect, url_for, flash
 from flask_bootstrap import Bootstrap
@@ -29,7 +29,9 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', "sqlite:///blog.db")
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -86,7 +88,7 @@ def admin_only(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if current_user.id != 1:
-            return abort(403)
+            return os.abort(403)
         return f(*args, **kwargs)
     return decorated_function
 
